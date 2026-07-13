@@ -1,22 +1,36 @@
 import { Platform } from 'react-native';
-import * as Notifications from 'expo-notifications';
-import Constants from 'expo-constants';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import Device from 'expo-device';
 import { supabase } from '@/lib/supabase';
 
 const REMINDER_NOTIFICATION_ID = 'daily-devotion-reminder';
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldPlaySound: false,
-    shouldSetBadge: false,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
+// expo-notifications' remote-push functionality was removed from Expo Go in SDK 53,
+// and merely importing the module throws there — so it must be loaded lazily and
+// skipped entirely when running inside Expo Go rather than a dev/production build.
+const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
+
+let handlerSet = false;
+async function getNotifications() {
+  if (isExpoGo) return null;
+  const Notifications = await import('expo-notifications');
+  if (!handlerSet) {
+    handlerSet = true;
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldPlaySound: false,
+        shouldSetBadge: false,
+        shouldShowBanner: true,
+        shouldShowList: true,
+      }),
+    });
+  }
+  return Notifications;
+}
 
 export async function registerForPushNotificationsAsync(userId: string) {
-  if (!Device.isDevice) return null;
+  const Notifications = await getNotifications();
+  if (!Notifications || !Device.isDevice) return null;
 
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync('default', {
@@ -49,6 +63,9 @@ export async function registerForPushNotificationsAsync(userId: string) {
 }
 
 export async function syncDailyReminder(enabled: boolean, time: string) {
+  const Notifications = await getNotifications();
+  if (!Notifications) return;
+
   await Notifications.cancelScheduledNotificationAsync(REMINDER_NOTIFICATION_ID).catch(() => {});
   if (!enabled) return;
 
