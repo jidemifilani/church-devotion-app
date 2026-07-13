@@ -1,13 +1,16 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text } from 'react-native';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { supabase } from '@/lib/supabase';
+import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/Button';
 import { TextField } from '@/components/TextField';
-import { colors, spacing, typography } from '@/constants/theme';
+import type { Theme } from '@/constants/theme';
 
 export default function AdminHymnEditorScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { theme } = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const isNew = id === 'new';
 
   const [number, setNumber] = useState('');
@@ -73,7 +76,7 @@ export default function AdminHymnEditorScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={typography.heading}>{isNew ? 'New Hymn' : 'Edit Hymn'}</Text>
+      <Text style={theme.typography.heading}>{isNew ? 'New Hymn' : 'Edit Hymn'}</Text>
       <TextField label="Number (optional)" value={number} onChangeText={setNumber} keyboardType="number-pad" placeholder="1" />
       <TextField label="Title" value={title} onChangeText={setTitle} placeholder="Amazing Grace" />
       <TextField label="Author (optional)" value={author} onChangeText={setAuthor} placeholder="John Newton" />
@@ -93,7 +96,8 @@ export default function AdminHymnEditorScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { padding: spacing.lg, gap: spacing.md, backgroundColor: colors.background, flexGrow: 1 },
-  multilineTall: { minHeight: 200, textAlignVertical: 'top' },
-});
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
+    container: { padding: theme.spacing.lg, gap: theme.spacing.md, backgroundColor: theme.colors.background, flexGrow: 1 },
+    multilineTall: { minHeight: 200, textAlignVertical: 'top' },
+  });

@@ -1,0 +1,43 @@
+{
+  "nav": {
+    "today": "Today",
+    "plans": "Plans",
+    "prayer": "Prayer",
+    "hymns": "Hymns",
+    "profile": "Profile",
+    "church": "Church"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "signOut": "Sign out",
+    "loading": "Loading…",
+    "retry": "Retry",
+    "share": "Share",
+    "report": "Report"
+  },
+  "auth": {
+    "welcomeBackTitle": "Welcome back",
+    "welcomeBackSubtitle": "Sign in to continue your daily devotion.",
+    "createAccountTitle": "Create your account",
+    "createAccountSubtitle": "Join the church community.",
+    "email": "Email",
+    "password": "Password",
+    "fullName": "Full name",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Already have an account?",
+    "createOne": "Create one",
+    "signIn": "Sign in"
+  },
+  "language": {
+    "title": "Language",
+    "en": "English",
+    "fr": "Français",
+    "yo": "Yorùbá",
+    "ig": "Igbo",
+    "ha": "Hausa"
+  }
+}

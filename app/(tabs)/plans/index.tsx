@@ -1,16 +1,19 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
+import { useTheme } from '@/hooks/useTheme';
 import { Card } from '@/components/Card';
-import { colors, spacing, typography } from '@/constants/theme';
+import type { Theme } from '@/constants/theme';
 import type { ReadingPlan, UserPlanProgress } from '@/types/database';
 
 type PlanWithProgress = ReadingPlan & { progress: UserPlanProgress | null };
 
 export default function PlansScreen() {
   const { session } = useAuth();
+  const { theme } = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const [plans, setPlans] = useState<PlanWithProgress[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -40,7 +43,7 @@ export default function PlansScreen() {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator color={colors.primary} />
+        <ActivityIndicator color={theme.colors.primary} />
       </View>
     );
   }
@@ -52,14 +55,14 @@ export default function PlansScreen() {
       contentContainerStyle={styles.container}
       ListEmptyComponent={
         <View style={styles.centered}>
-          <Text style={typography.body}>No reading plans yet. Check back soon.</Text>
+          <Text style={theme.typography.body}>No reading plans yet. Check back soon.</Text>
         </View>
       }
       renderItem={({ item }) => (
         <Card onPress={() => router.push(`/plans/${item.id}`)}>
-          <Text style={typography.heading}>{item.title}</Text>
-          {item.description ? <Text style={typography.body}>{item.description}</Text> : null}
-          <Text style={typography.caption}>
+          <Text style={theme.typography.heading}>{item.title}</Text>
+          {item.description ? <Text style={theme.typography.body}>{item.description}</Text> : null}
+          <Text style={theme.typography.caption}>
             {item.duration_days} day{item.duration_days === 1 ? '' : 's'}
             {item.progress
               ? item.progress.completed_at
@@ -73,7 +76,8 @@ export default function PlansScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  centered: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.lg },
-  container: { padding: spacing.lg, gap: spacing.md, backgroundColor: colors.background, flexGrow: 1 },
-});
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
+    centered: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: theme.spacing.lg },
+    container: { padding: theme.spacing.lg, gap: theme.spacing.md, backgroundColor: theme.colors.background, flexGrow: 1 },
+  });

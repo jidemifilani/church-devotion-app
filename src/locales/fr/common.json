@@ -1,0 +1,43 @@
+{
+  "nav": {
+    "today": "Aujourd'hui",
+    "plans": "Programmes",
+    "prayer": "Prière",
+    "hymns": "Cantiques",
+    "profile": "Profil",
+    "church": "Église"
+  },
+  "actions": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "signIn": "Se connecter",
+    "signUp": "S'inscrire",
+    "signOut": "Se déconnecter",
+    "loading": "Chargement…",
+    "retry": "Réessayer",
+    "share": "Partager",
+    "report": "Signaler"
+  },
+  "auth": {
+    "welcomeBackTitle": "Bon retour",
+    "welcomeBackSubtitle": "Connectez-vous pour continuer votre dévotion quotidienne.",
+    "createAccountTitle": "Créez votre compte",
+    "createAccountSubtitle": "Rejoignez la communauté de l'église.",
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "fullName": "Nom complet",
+    "noAccount": "Vous n'avez pas de compte ?",
+    "haveAccount": "Vous avez déjà un compte ?",
+    "createOne": "Créer un compte",
+    "signIn": "Se connecter"
+  },
+  "language": {
+    "title": "Langue",
+    "en": "English",
+    "fr": "Français",
+    "yo": "Yorùbá",
+    "ig": "Igbo",
+    "ha": "Hausa"
+  }
+}

@@ -1,12 +1,15 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { supabase } from '@/lib/supabase';
+import { useTheme } from '@/hooks/useTheme';
 import { Card } from '@/components/Card';
-import { colors, radius, spacing, typography } from '@/constants/theme';
+import type { Theme } from '@/constants/theme';
 import type { Hymn } from '@/types/database';
 
 export default function HymnsScreen() {
+  const { theme } = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const [hymns, setHymns] = useState<Hymn[]>([]);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
@@ -29,7 +32,7 @@ export default function HymnsScreen() {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator color={colors.primary} />
+        <ActivityIndicator color={theme.colors.primary} />
       </View>
     );
   }
@@ -40,7 +43,7 @@ export default function HymnsScreen() {
         <TextInput
           style={styles.search}
           placeholder="Search hymns..."
-          placeholderTextColor={colors.textMuted}
+          placeholderTextColor={theme.colors.textMuted}
           value={query}
           onChangeText={setQuery}
         />
@@ -51,15 +54,15 @@ export default function HymnsScreen() {
         contentContainerStyle={styles.container}
         ListEmptyComponent={
           <View style={styles.centered}>
-            <Text style={typography.body}>No hymns found.</Text>
+            <Text style={theme.typography.body}>No hymns found.</Text>
           </View>
         }
         renderItem={({ item }) => (
           <Card onPress={() => router.push(`/hymns/${item.id}`)} style={styles.row}>
             <Text style={styles.number}>{item.number ?? '–'}</Text>
             <View style={styles.rowText}>
-              <Text style={typography.heading}>{item.title}</Text>
-              {item.author ? <Text style={typography.caption}>{item.author}</Text> : null}
+              <Text style={theme.typography.heading}>{item.title}</Text>
+              {item.author ? <Text style={theme.typography.caption}>{item.author}</Text> : null}
             </View>
           </Card>
         )}
@@ -68,21 +71,22 @@ export default function HymnsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: colors.background },
-  centered: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.lg },
-  searchWrap: { padding: spacing.lg, paddingBottom: 0 },
-  search: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.pill,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm + 2,
-    backgroundColor: colors.surface,
-    fontSize: 16,
-  },
-  container: { padding: spacing.lg, gap: spacing.sm, flexGrow: 1 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  number: { width: 32, textAlign: 'center', fontWeight: '700', color: colors.primary, fontSize: 16 },
-  rowText: { flex: 1, gap: 2 },
-});
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
+    flex: { flex: 1, backgroundColor: theme.colors.background },
+    centered: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: theme.spacing.lg },
+    searchWrap: { padding: theme.spacing.lg, paddingBottom: 0 },
+    search: {
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: theme.radius.pill,
+      paddingHorizontal: theme.spacing.md,
+      paddingVertical: theme.spacing.sm + 2,
+      backgroundColor: theme.colors.surface,
+      fontSize: 16,
+    },
+    container: { padding: theme.spacing.lg, gap: theme.spacing.sm, flexGrow: 1 },
+    row: { flexDirection: 'row', alignItems: 'center', gap: theme.spacing.md },
+    number: { width: 32, textAlign: 'center', fontWeight: '700', color: theme.colors.primary, fontSize: 16 },
+    rowText: { flex: 1, gap: 2 },
+  });

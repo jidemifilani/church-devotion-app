@@ -1,13 +1,18 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Link } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
+import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/Button';
 import { TextField } from '@/components/TextField';
-import { colors, spacing, typography } from '@/constants/theme';
+import type { Theme } from '@/constants/theme';
 
 export default function LoginScreen() {
   const { signInWithEmail } = useAuth();
+  const { theme } = useTheme();
+  const { t } = useTranslation();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -26,14 +31,12 @@ export default function LoginScreen() {
       style={styles.flex}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <Text style={typography.title}>Welcome back</Text>
-        <Text style={[typography.body, styles.subtitle]}>
-          Sign in to continue your daily devotion.
-        </Text>
+        <Text style={theme.typography.title}>{t('auth.welcomeBackTitle')}</Text>
+        <Text style={[theme.typography.body, styles.subtitle]}>{t('auth.welcomeBackSubtitle')}</Text>
 
         <View style={styles.form}>
           <TextField
-            label="Email"
+            label={t('auth.email')}
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
@@ -41,19 +44,19 @@ export default function LoginScreen() {
             placeholder="you@example.com"
           />
           <TextField
-            label="Password"
+            label={t('auth.password')}
             value={password}
             onChangeText={setPassword}
             secureTextEntry
             placeholder="••••••••"
           />
           {error ? <Text style={styles.error}>{error}</Text> : null}
-          <Button label="Sign In" onPress={handleSubmit} loading={loading} />
+          <Button label={t('actions.signIn')} onPress={handleSubmit} loading={loading} />
         </View>
 
         <Link href="/(auth)/signup" style={styles.link}>
-          <Text style={typography.body}>
-            Don't have an account? <Text style={styles.linkText}>Create one</Text>
+          <Text style={theme.typography.body}>
+            {t('auth.noAccount')} <Text style={styles.linkText}>{t('auth.createOne')}</Text>
           </Text>
         </Link>
       </ScrollView>
@@ -61,12 +64,13 @@ export default function LoginScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: colors.background },
-  container: { flexGrow: 1, padding: spacing.lg, justifyContent: 'center', gap: spacing.md },
-  subtitle: { color: colors.textMuted },
-  form: { gap: spacing.md, marginTop: spacing.lg },
-  error: { color: colors.danger },
-  link: { marginTop: spacing.xl, alignSelf: 'center' },
-  linkText: { color: colors.primary, fontWeight: '600' },
-});
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
+    flex: { flex: 1, backgroundColor: theme.colors.background },
+    container: { flexGrow: 1, padding: theme.spacing.lg, justifyContent: 'center', gap: theme.spacing.md },
+    subtitle: { color: theme.colors.textMuted },
+    form: { gap: theme.spacing.md, marginTop: theme.spacing.lg },
+    error: { color: theme.colors.danger },
+    link: { marginTop: theme.spacing.xl, alignSelf: 'center' },
+    linkText: { color: theme.colors.primary, fontWeight: '600' },
+  });

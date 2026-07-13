@@ -1,13 +1,16 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Alert, FlatList, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
-import { colors, spacing, typography } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
+import type { Theme } from '@/constants/theme';
 import type { PrayerRequest } from '@/types/database';
 
 export default function AdminPrayerScreen() {
+  const { theme } = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const [requests, setRequests] = useState<PrayerRequest[]>([]);
 
   const load = useCallback(() => {
@@ -51,16 +54,16 @@ export default function AdminPrayerScreen() {
       contentContainerStyle={styles.container}
       ListEmptyComponent={
         <View style={styles.centered}>
-          <Text style={typography.body}>No prayer requests yet.</Text>
+          <Text style={theme.typography.body}>No prayer requests yet.</Text>
         </View>
       }
       renderItem={({ item }) => (
         <Card>
-          <Text style={typography.caption}>
+          <Text style={theme.typography.caption}>
             {item.is_anonymous ? 'Anonymous' : item.display_name ?? 'A member'} • {item.prayer_count} praying
             {item.status === 'answered' ? ' • Answered' : ''}
           </Text>
-          <Text style={typography.body}>{item.content}</Text>
+          <Text style={theme.typography.body}>{item.content}</Text>
           <View style={styles.actions}>
             <Button
               label={item.status === 'active' ? 'Mark answered' : 'Mark active'}
@@ -76,9 +79,10 @@ export default function AdminPrayerScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  centered: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.lg },
-  container: { padding: spacing.lg, gap: spacing.md, backgroundColor: colors.background, flexGrow: 1 },
-  actions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.xs },
-  actionButton: { flex: 1 },
-});
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
+    centered: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: theme.spacing.lg },
+    container: { padding: theme.spacing.lg, gap: theme.spacing.md, backgroundColor: theme.colors.background, flexGrow: 1 },
+    actions: { flexDirection: 'row', gap: theme.spacing.sm, marginTop: theme.spacing.xs },
+    actionButton: { flex: 1 },
+  });

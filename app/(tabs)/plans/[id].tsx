@@ -1,16 +1,19 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
+import { useTheme } from '@/hooks/useTheme';
 import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
-import { colors, spacing, typography } from '@/constants/theme';
+import type { Theme } from '@/constants/theme';
 import type { ReadingPlan, ReadingPlanDay, UserPlanProgress } from '@/types/database';
 
 export default function PlanDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { session } = useAuth();
+  const { theme } = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const [plan, setPlan] = useState<ReadingPlan | null>(null);
   const [days, setDays] = useState<ReadingPlanDay[]>([]);
   const [progress, setProgress] = useState<UserPlanProgress | null>(null);
@@ -66,7 +69,7 @@ export default function PlanDetailScreen() {
   if (loading || !plan) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator color={colors.primary} />
+        <ActivityIndicator color={theme.colors.primary} />
       </View>
     );
   }
@@ -78,7 +81,7 @@ export default function PlanDetailScreen() {
       contentContainerStyle={styles.container}
       ListHeaderComponent={
         <View style={styles.header}>
-          {plan.description ? <Text style={typography.body}>{plan.description}</Text> : null}
+          {plan.description ? <Text style={theme.typography.body}>{plan.description}</Text> : null}
           {!progress ? (
             <Button label="Start Plan" onPress={startPlan} loading={busy} />
           ) : progress.completed_at ? (
@@ -91,10 +94,10 @@ export default function PlanDetailScreen() {
         const isPast = progress ? item.day_number < progress.current_day || !!progress.completed_at : false;
         return (
           <Card style={isCurrent ? styles.currentCard : undefined}>
-            <Text style={typography.caption}>Day {item.day_number}</Text>
-            {item.title ? <Text style={typography.heading}>{item.title}</Text> : null}
+            <Text style={theme.typography.caption}>Day {item.day_number}</Text>
+            {item.title ? <Text style={theme.typography.heading}>{item.title}</Text> : null}
             {item.scripture_reference ? <Text style={styles.scripture}>{item.scripture_reference}</Text> : null}
-            <Text style={typography.body}>{item.content}</Text>
+            <Text style={theme.typography.body}>{item.content}</Text>
             {isCurrent ? (
               <Button label="Mark day complete" onPress={() => completeDay(item.day_number)} loading={busy} />
             ) : isPast ? (
@@ -107,12 +110,13 @@ export default function PlanDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  centered: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.lg },
-  container: { padding: spacing.lg, gap: spacing.md, backgroundColor: colors.background, flexGrow: 1 },
-  header: { gap: spacing.md, marginBottom: spacing.sm },
-  currentCard: { borderColor: colors.primary, borderWidth: 2 },
-  scripture: { fontWeight: '600', color: colors.primary },
-  completeLabel: { color: colors.success, fontWeight: '600' },
-  doneBadge: { fontSize: 16, fontWeight: '600', color: colors.success },
-});
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
+    centered: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: theme.spacing.lg },
+    container: { padding: theme.spacing.lg, gap: theme.spacing.md, backgroundColor: theme.colors.background, flexGrow: 1 },
+    header: { gap: theme.spacing.md, marginBottom: theme.spacing.sm },
+    currentCard: { borderColor: theme.colors.primary, borderWidth: 2 },
+    scripture: { fontWeight: '600', color: theme.colors.primary },
+    completeLabel: { color: theme.colors.success, fontWeight: '600' },
+    doneBadge: { fontSize: 16, fontWeight: '600', color: theme.colors.success },
+  });

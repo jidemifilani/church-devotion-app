@@ -1,5 +1,7 @@
+import { useMemo } from 'react';
 import { StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native';
-import { colors, radius, spacing, typography } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
+import type { Theme } from '@/constants/theme';
 
 type Props = TextInputProps & {
   label: string;
@@ -7,11 +9,13 @@ type Props = TextInputProps & {
 };
 
 export function TextField({ label, error, style, ...rest }: Props) {
+  const { theme } = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   return (
     <View style={styles.container}>
-      <Text style={typography.caption}>{label}</Text>
+      <Text style={theme.typography.caption}>{label}</Text>
       <TextInput
-        placeholderTextColor={colors.textMuted}
+        placeholderTextColor={theme.colors.textMuted}
         style={[styles.input, style]}
         {...rest}
       />
@@ -20,17 +24,18 @@ export function TextField({ label, error, style, ...rest }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { gap: spacing.xs },
-  input: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.sm,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm + 4,
-    fontSize: 16,
-    color: colors.text,
-    backgroundColor: colors.surface,
-  },
-  error: { color: colors.danger, fontSize: 13 },
-});
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
+    container: { gap: theme.spacing.xs },
+    input: {
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: theme.radius.sm,
+      paddingHorizontal: theme.spacing.md,
+      paddingVertical: theme.spacing.sm + 4,
+      fontSize: 16 * theme.fontScale,
+      color: theme.colors.text,
+      backgroundColor: theme.colors.surface,
+    },
+    error: { color: theme.colors.danger, fontSize: 13 * theme.fontScale },
+  });

@@ -1,9 +1,10 @@
 import { Stack } from 'expo-router';
-import { colors } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 
 export default function PrayerLayout() {
+  const { theme } = useTheme();
   return (
-    <Stack screenOptions={{ headerStyle: { backgroundColor: colors.surface }, headerTintColor: colors.text }}>
+    <Stack screenOptions={{ headerStyle: { backgroundColor: theme.colors.surface }, headerTintColor: theme.colors.text }}>
       <Stack.Screen name="index" options={{ title: 'Prayer Wall' }} />
       <Stack.Screen name="new" options={{ title: 'New Prayer Request', presentation: 'modal' }} />
     </Stack>

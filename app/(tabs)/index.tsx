@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { Pressable } from 'react-native';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
-import { colors, radius, spacing, typography } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
+import { DevotionView } from '@/components/DevotionView';
+import type { Theme } from '@/constants/theme';
 import type { Devotion } from '@/types/database';
 
 function todayIso() {
@@ -13,6 +13,8 @@ function todayIso() {
 
 export default function TodayScreen() {
   const { session } = useAuth();
+  const { theme } = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const [devotion, setDevotion] = useState<Devotion | null>(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -22,6 +24,7 @@ export default function TodayScreen() {
     const { data: devotionData } = await supabase
       .from('devotions')
       .select('*')
+      .eq('status', 'published')
       .lte('devotion_date', todayIso())
       .order('devotion_date', { ascending: false })
       .limit(1)
@@ -37,6 +40,7 @@ export default function TodayScreen() {
         .eq('devotion_id', devotionData.id)
         .maybeSingle();
       setIsBookmarked(!!bookmark);
+      supabase.rpc('record_devotion_read', { p_devotion_id: devotionData.id });
     }
   }, [session]);
 
@@ -69,7 +73,7 @@ export default function TodayScreen() {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator color={colors.primary} />
+        <ActivityIndicator color={theme.colors.primary} />
       </View>
     );
   }
@@ -77,60 +81,22 @@ export default function TodayScreen() {
   if (!devotion) {
     return (
       <View style={styles.centered}>
-        <Text style={typography.body}>No devotion has been posted yet. Check back soon.</Text>
+        <Text style={theme.typography.body}>No devotion has been posted yet. Check back soon.</Text>
       </View>
     );
   }
 
-  const dateLabel = new Date(devotion.devotion_date).toLocaleDateString(undefined, {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-  });
-
   return (
     <ScrollView
       contentContainerStyle={styles.container}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}>
-      <Text style={typography.caption}>{dateLabel}</Text>
-
-      <View style={styles.titleRow}>
-        <Text style={[typography.title, styles.titleText]}>{devotion.title}</Text>
-        <Pressable onPress={toggleBookmark} hitSlop={12}>
-          <Ionicons
-            name={isBookmarked ? 'bookmark' : 'bookmark-outline'}
-            size={26}
-            color={colors.primary}
-          />
-        </Pressable>
-      </View>
-
-      <View style={styles.scriptureCard}>
-        <Text style={styles.scriptureRef}>{devotion.scripture_reference}</Text>
-        {devotion.scripture_text ? (
-          <Text style={styles.scriptureText}>"{devotion.scripture_text}"</Text>
-        ) : null}
-      </View>
-
-      <Text style={typography.body}>{devotion.body}</Text>
-
-      {devotion.author ? <Text style={styles.author}>— {devotion.author}</Text> : null}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />}>
+      <DevotionView devotion={devotion} isBookmarked={isBookmarked} onToggleBookmark={toggleBookmark} />
     </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  centered: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background, padding: spacing.lg },
-  container: { padding: spacing.lg, gap: spacing.md, backgroundColor: colors.background },
-  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.sm },
-  titleText: { flex: 1 },
-  scriptureCard: {
-    backgroundColor: colors.primaryMuted,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    gap: spacing.xs,
-  },
-  scriptureRef: { fontSize: 15, fontWeight: '700', color: colors.primary },
-  scriptureText: { fontSize: 16, fontStyle: 'italic', color: colors.text },
-  author: { fontSize: 15, color: colors.textMuted, textAlign: 'right' },
-});
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
+    centered: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.background, padding: theme.spacing.lg },
+    container: { padding: theme.spacing.lg, gap: theme.spacing.md, backgroundColor: theme.colors.background },
+  });

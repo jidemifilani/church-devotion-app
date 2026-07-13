@@ -1,17 +1,20 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Alert, FlatList, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
+import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/Button';
 import { TextField } from '@/components/TextField';
 import { Card } from '@/components/Card';
-import { colors, spacing, typography } from '@/constants/theme';
+import type { Theme } from '@/constants/theme';
 import type { ReadingPlan, ReadingPlanDay } from '@/types/database';
 
 export default function AdminPlanEditorScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { profile } = useAuth();
+  const { theme } = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const isNew = id === 'new';
 
   const [plan, setPlan] = useState<ReadingPlan | null>(null);
@@ -114,7 +117,7 @@ export default function AdminPlanEditorScreen() {
     return (
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.form}>
-          <Text style={typography.heading}>New Reading Plan</Text>
+          <Text style={theme.typography.heading}>New Reading Plan</Text>
           <TextField label="Title" value={title} onChangeText={setTitle} placeholder="7 Days of Gratitude" />
           <TextField label="Description (optional)" value={description} onChangeText={setDescription} multiline style={styles.multiline} />
           <TextField label="Duration (days)" value={durationDays} onChangeText={setDurationDays} keyboardType="number-pad" />
@@ -131,14 +134,14 @@ export default function AdminPlanEditorScreen() {
       contentContainerStyle={styles.container}
       ListHeaderComponent={
         <View style={styles.form}>
-          <Text style={typography.heading}>{plan?.title}</Text>
-          {plan?.description ? <Text style={typography.body}>{plan.description}</Text> : null}
-          <Text style={typography.caption}>
+          <Text style={theme.typography.heading}>{plan?.title}</Text>
+          {plan?.description ? <Text style={theme.typography.body}>{plan.description}</Text> : null}
+          <Text style={theme.typography.caption}>
             {days.length} of {plan?.duration_days} days added
           </Text>
 
           <View style={styles.addDayCard}>
-            <Text style={typography.caption}>ADD DAY {days.length + 1}</Text>
+            <Text style={theme.typography.caption}>ADD DAY {days.length + 1}</Text>
             <TextField label="Day title (optional)" value={dayTitle} onChangeText={setDayTitle} />
             <TextField label="Scripture reference (optional)" value={dayScripture} onChangeText={setDayScripture} />
             <TextField label="Content" value={dayContent} onChangeText={setDayContent} multiline style={styles.multiline} />
@@ -148,10 +151,10 @@ export default function AdminPlanEditorScreen() {
       }
       renderItem={({ item }) => (
         <Card>
-          <Text style={typography.caption}>Day {item.day_number}</Text>
-          {item.title ? <Text style={typography.heading}>{item.title}</Text> : null}
-          {item.scripture_reference ? <Text style={typography.caption}>{item.scripture_reference}</Text> : null}
-          <Text style={typography.body}>{item.content}</Text>
+          <Text style={theme.typography.caption}>Day {item.day_number}</Text>
+          {item.title ? <Text style={theme.typography.heading}>{item.title}</Text> : null}
+          {item.scripture_reference ? <Text style={theme.typography.caption}>{item.scripture_reference}</Text> : null}
+          <Text style={theme.typography.body}>{item.content}</Text>
           <Button label="Delete day" variant="secondary" onPress={() => removeDay(item)} />
         </Card>
       )}
@@ -159,17 +162,18 @@ export default function AdminPlanEditorScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { padding: spacing.lg, gap: spacing.md, backgroundColor: colors.background, flexGrow: 1 },
-  form: { gap: spacing.md, marginBottom: spacing.md },
-  multiline: { minHeight: 80, textAlignVertical: 'top' },
-  addDayCard: {
-    gap: spacing.sm,
-    backgroundColor: colors.surface,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: spacing.md,
-    marginTop: spacing.sm,
-  },
-});
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
+    container: { padding: theme.spacing.lg, gap: theme.spacing.md, backgroundColor: theme.colors.background, flexGrow: 1 },
+    form: { gap: theme.spacing.md, marginBottom: theme.spacing.md },
+    multiline: { minHeight: 80, textAlignVertical: 'top' },
+    addDayCard: {
+      gap: theme.spacing.sm,
+      backgroundColor: theme.colors.surface,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      padding: theme.spacing.md,
+      marginTop: theme.spacing.sm,
+    },
+  });

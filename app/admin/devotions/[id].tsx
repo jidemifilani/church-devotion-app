@@ -1,11 +1,12 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text } from 'react-native';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
+import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/Button';
 import { TextField } from '@/components/TextField';
-import { colors, spacing, typography } from '@/constants/theme';
+import type { Theme } from '@/constants/theme';
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
@@ -14,6 +15,8 @@ function todayIso() {
 export default function AdminDevotionEditorScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { profile } = useAuth();
+  const { theme } = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const isNew = id === 'new';
 
   const [devotionDate, setDevotionDate] = useState(todayIso());
@@ -83,7 +86,7 @@ export default function AdminDevotionEditorScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={typography.heading}>{isNew ? 'New Devotion' : 'Edit Devotion'}</Text>
+      <Text style={theme.typography.heading}>{isNew ? 'New Devotion' : 'Edit Devotion'}</Text>
       <TextField label="Date (YYYY-MM-DD)" value={devotionDate} onChangeText={setDevotionDate} placeholder={todayIso()} />
       <TextField label="Title" value={title} onChangeText={setTitle} placeholder="Walking in Faith" />
       <TextField
@@ -116,8 +119,9 @@ export default function AdminDevotionEditorScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { padding: spacing.lg, gap: spacing.md, backgroundColor: colors.background, flexGrow: 1 },
-  multiline: { minHeight: 80, textAlignVertical: 'top' },
-  multilineTall: { minHeight: 160, textAlignVertical: 'top' },
-});
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
+    container: { padding: theme.spacing.lg, gap: theme.spacing.md, backgroundColor: theme.colors.background, flexGrow: 1 },
+    multiline: { minHeight: 80, textAlignVertical: 'top' },
+    multilineTall: { minHeight: 160, textAlignVertical: 'top' },
+  });

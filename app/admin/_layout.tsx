@@ -1,9 +1,10 @@
 import { Stack } from 'expo-router';
-import { colors } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 
 export default function AdminLayout() {
+  const { theme } = useTheme();
   return (
-    <Stack screenOptions={{ headerStyle: { backgroundColor: colors.surface }, headerTintColor: colors.text }}>
+    <Stack screenOptions={{ headerStyle: { backgroundColor: theme.colors.surface }, headerTintColor: theme.colors.text }}>
       <Stack.Screen name="index" options={{ title: 'Admin Dashboard' }} />
       <Stack.Screen name="devotions/index" options={{ title: 'Devotions' }} />
       <Stack.Screen name="devotions/[id]" options={{ title: 'Devotion' }} />
