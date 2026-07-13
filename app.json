@@ -2,11 +2,12 @@
   "expo": {
     "name": "church-devotion-app",
     "slug": "church-devotion-app",
+    "owner": "irisservice",
     "scheme": "churchdevotion",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.churchdevotion.app"
@@ -37,8 +38,9 @@
     ],
     "extra": {
       "eas": {
-        "projectId": ""
-      }
+        "projectId": "1ee412e8-75d3-4200-8f40-129f68fca226"
+      },
+      "router": {}
     }
   }
 }
