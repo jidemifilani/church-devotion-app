@@ -10,12 +10,14 @@ import type { Theme } from '@/constants/theme';
 import type { PrayerRequest } from '@/types/database';
 
 type Row = PrayerRequest & { hasPrayed: boolean };
+type Filter = 'active' | 'answered';
 
 export default function PrayerWallScreen() {
   const { session } = useAuth();
   const { theme } = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const [requests, setRequests] = useState<Row[]>([]);
+  const [filter, setFilter] = useState<Filter>('active');
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
@@ -40,19 +42,21 @@ export default function PrayerWallScreen() {
 
   const togglePray = async (item: Row) => {
     if (!session) return;
+    const willPray = !item.hasPrayed;
     setRequests((prev) =>
       prev.map((r) =>
-        r.id === item.id
-          ? { ...r, hasPrayed: !r.hasPrayed, prayer_count: r.prayer_count + (r.hasPrayed ? -1 : 1) }
-          : r
+        r.id === item.id ? { ...r, hasPrayed: willPray, prayer_count: r.prayer_count + (willPray ? 1 : -1) } : r
       )
     );
-    if (item.hasPrayed) {
-      await supabase.from('prayer_interactions').delete().eq('user_id', session.user.id).eq('prayer_request_id', item.id);
-    } else {
+    if (willPray) {
       await supabase.from('prayer_interactions').insert({ user_id: session.user.id, prayer_request_id: item.id });
+      supabase.functions.invoke('notify-prayer', { body: { prayer_request_id: item.id } });
+    } else {
+      await supabase.from('prayer_interactions').delete().eq('user_id', session.user.id).eq('prayer_request_id', item.id);
     }
   };
+
+  const filtered = requests.filter((r) => r.status === filter);
 
   if (loading) {
     return (
@@ -64,17 +68,27 @@ export default function PrayerWallScreen() {
 
   return (
     <View style={styles.flex}>
+      <View style={styles.filterRow}>
+        <Pressable onPress={() => setFilter('active')} style={[styles.filterChip, filter === 'active' && styles.filterChipActive]}>
+          <Text style={[styles.filterText, filter === 'active' && styles.filterTextActive]}>Active</Text>
+        </Pressable>
+        <Pressable onPress={() => setFilter('answered')} style={[styles.filterChip, filter === 'answered' && styles.filterChipActive]}>
+          <Text style={[styles.filterText, filter === 'answered' && styles.filterTextActive]}>🙌 Answered</Text>
+        </Pressable>
+      </View>
       <FlatList
-        data={requests}
+        data={filtered}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.container}
         ListEmptyComponent={
           <View style={styles.centered}>
-            <Text style={theme.typography.body}>No prayer requests yet. Be the first to share one.</Text>
+            <Text style={theme.typography.body}>
+              {filter === 'active' ? 'No prayer requests yet. Be the first to share one.' : 'No answered prayers yet.'}
+            </Text>
           </View>
         }
         renderItem={({ item }) => (
-          <Card>
+          <Card onPress={() => router.push(`/prayer/${item.id}`)}>
             <Text style={theme.typography.caption}>
               {item.is_anonymous ? 'Anonymous' : item.display_name ?? 'A member'}
               {item.status === 'answered' ? '  •  🙌 Answered' : ''}
@@ -105,6 +119,16 @@ const makeStyles = (theme: Theme) =>
     flex: { flex: 1, backgroundColor: theme.colors.background },
     centered: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: theme.spacing.lg },
     container: { padding: theme.spacing.lg, gap: theme.spacing.md, flexGrow: 1 },
+    filterRow: { flexDirection: 'row', gap: theme.spacing.sm, padding: theme.spacing.lg, paddingBottom: 0 },
+    filterChip: {
+      paddingVertical: theme.spacing.xs,
+      paddingHorizontal: theme.spacing.md,
+      borderRadius: theme.radius.pill,
+      backgroundColor: theme.colors.primaryMuted,
+    },
+    filterChipActive: { backgroundColor: theme.colors.primary },
+    filterText: { color: theme.colors.primary, fontWeight: '600', fontSize: 13 },
+    filterTextActive: { color: '#fff' },
     prayRow: { flexDirection: 'row', alignItems: 'center', gap: theme.spacing.xs, marginTop: theme.spacing.xs },
     prayCount: { color: theme.colors.primary, fontWeight: '600' },
     fab: {

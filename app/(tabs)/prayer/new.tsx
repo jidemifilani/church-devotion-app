@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
@@ -26,7 +26,8 @@ export default function NewPrayerRequestScreen() {
       display_name: isAnonymous ? null : profile?.full_name ?? null,
     });
     setLoading(false);
-    if (!error) router.back();
+    if (error) Alert.alert('Could not post', error.message);
+    else router.back();
   };
 
   return (
