@@ -13,6 +13,8 @@ export default function AdminLayout() {
       <Stack.Screen name="plans/index" options={{ title: 'Reading Plans' }} />
       <Stack.Screen name="plans/[id]" options={{ title: 'Plan' }} />
       <Stack.Screen name="prayer/index" options={{ title: 'Prayer Requests' }} />
+      <Stack.Screen name="analytics/index" options={{ title: 'Analytics' }} />
+      <Stack.Screen name="members/index" options={{ title: 'Members' }} />
     </Stack>
   );
 }

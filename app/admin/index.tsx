@@ -10,6 +10,8 @@ const SECTIONS = [
   { href: '/admin/plans', icon: 'book-outline', title: 'Reading Plans', subtitle: 'Create multi-day reading plans' },
   { href: '/admin/hymns', icon: 'musical-notes-outline', title: 'Hymns', subtitle: 'Manage the hymn book' },
   { href: '/admin/prayer', icon: 'heart-outline', title: 'Prayer Requests', subtitle: 'Moderate and mark as answered' },
+  { href: '/admin/analytics', icon: 'bar-chart-outline', title: 'Analytics', subtitle: 'Engagement at a glance' },
+  { href: '/admin/members', icon: 'people-outline', title: 'Members', subtitle: 'Manage roles' },
 ] as const;
 
 export default function AdminDashboard() {
