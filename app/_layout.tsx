@@ -7,7 +7,7 @@ import { ThemeProvider, useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import { registerForPushNotificationsAsync, syncDailyReminder } from '@/lib/notifications';
 import { initI18n, changeLocale } from '@/lib/i18n';
-import { Sentry } from '@/lib/sentry';
+import { wrapRoot } from '@/lib/sentry';
 
 const STAFF_ROLES = ['editor', 'moderator', 'admin'];
 
@@ -75,4 +75,4 @@ function RootLayout() {
   );
 }
 
-export default Sentry.wrap(RootLayout);
+export default wrapRoot(RootLayout);
