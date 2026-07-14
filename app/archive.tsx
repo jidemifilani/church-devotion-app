@@ -5,38 +5,56 @@ import { supabase } from '@/lib/supabase';
 import { useTheme } from '@/hooks/useTheme';
 import { Card } from '@/components/Card';
 import type { Theme } from '@/constants/theme';
-import type { Hymn } from '@/types/database';
+import type { Devotion } from '@/types/database';
 
-export default function HymnsScreen() {
+function todayIso() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+export default function ArchiveScreen() {
   const { theme } = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
-  const [hymns, setHymns] = useState<Hymn[]>([]);
+  const [devotions, setDevotions] = useState<Devotion[]>([]);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const [searching, setSearching] = useState(false);
+
+  const loadRecent = useCallback(async () => {
+    const { data } = await supabase
+      .from('devotions')
+      .select('*')
+      .eq('status', 'published')
+      .lte('devotion_date', todayIso())
+      .order('devotion_date', { ascending: false })
+      .limit(60);
+    setDevotions(data ?? []);
+    setLoading(false);
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
-      supabase
-        .from('hymns')
-        .select('*')
-        .order('number', { ascending: true, nullsFirst: false })
-        .then(({ data }) => {
-          setHymns(data ?? []);
-          setLoading(false);
-        });
-    }, [])
+      loadRecent();
+    }, [loadRecent])
   );
 
-  const filtered = (() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return hymns;
-    return hymns.filter(
-      (h) =>
-        h.title.toLowerCase().includes(q) ||
-        h.lyrics.toLowerCase().includes(q) ||
-        (h.author?.toLowerCase().includes(q) ?? false)
-    );
-  })();
+  const runSearch = async (text: string) => {
+    setQuery(text);
+    const trimmed = text.trim();
+    if (!trimmed) {
+      setSearching(false);
+      loadRecent();
+      return;
+    }
+    setSearching(true);
+    const { data } = await supabase
+      .from('devotions')
+      .select('*')
+      .eq('status', 'published')
+      .textSearch('search_vector', trimmed.split(/\s+/).join(' & '), { type: 'plain' })
+      .order('devotion_date', { ascending: false })
+      .limit(60);
+    setDevotions(data ?? []);
+  };
 
   if (loading) {
     return (
@@ -51,28 +69,28 @@ export default function HymnsScreen() {
       <View style={styles.searchWrap}>
         <TextInput
           style={styles.search}
-          placeholder="Search hymns..."
+          placeholder="Search past devotions..."
           placeholderTextColor={theme.colors.textMuted}
           value={query}
-          onChangeText={setQuery}
+          onChangeText={runSearch}
         />
       </View>
       <FlatList
-        data={filtered}
+        data={devotions}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.container}
         ListEmptyComponent={
           <View style={styles.centered}>
-            <Text style={theme.typography.body}>No hymns found.</Text>
+            <Text style={theme.typography.body}>{searching ? 'No devotions match your search.' : 'Nothing here yet.'}</Text>
           </View>
         }
         renderItem={({ item }) => (
-          <Card onPress={() => router.push(`/hymns/${item.id}`)} style={styles.row}>
-            <Text style={styles.number}>{item.number ?? '–'}</Text>
-            <View style={styles.rowText}>
-              <Text style={theme.typography.heading}>{item.title}</Text>
-              {item.author ? <Text style={theme.typography.caption}>{item.author}</Text> : null}
-            </View>
+          <Card onPress={() => router.push(`/devotion/${item.id}`)}>
+            <Text style={theme.typography.caption}>
+              {new Date(item.devotion_date).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}
+            </Text>
+            <Text style={theme.typography.heading}>{item.title}</Text>
+            <Text style={theme.typography.caption}>{item.scripture_reference}</Text>
           </Card>
         )}
       />
@@ -93,9 +111,7 @@ const makeStyles = (theme: Theme) =>
       paddingVertical: theme.spacing.sm + 2,
       backgroundColor: theme.colors.surface,
       fontSize: 16,
+      color: theme.colors.text,
     },
     container: { padding: theme.spacing.lg, gap: theme.spacing.sm, flexGrow: 1 },
-    row: { flexDirection: 'row', alignItems: 'center', gap: theme.spacing.md },
-    number: { width: 32, textAlign: 'center', fontWeight: '700', color: theme.colors.primary, fontSize: 16 },
-    rowText: { flex: 1, gap: 2 },
   });

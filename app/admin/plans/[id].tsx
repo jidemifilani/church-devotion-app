@@ -7,6 +7,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/Button';
 import { TextField } from '@/components/TextField';
 import { Card } from '@/components/Card';
+import { TagPicker } from '@/components/TagPicker';
 import type { Theme } from '@/constants/theme';
 import type { ReadingPlan, ReadingPlanDay } from '@/types/database';
 
@@ -23,6 +24,7 @@ export default function AdminPlanEditorScreen() {
   const [description, setDescription] = useState('');
   const [durationDays, setDurationDays] = useState('7');
   const [savingPlan, setSavingPlan] = useState(false);
+  const [planTagIds, setPlanTagIds] = useState<string[]>([]);
 
   const [dayTitle, setDayTitle] = useState('');
   const [dayScripture, setDayScripture] = useState('');
@@ -31,9 +33,10 @@ export default function AdminPlanEditorScreen() {
 
   const load = useCallback(async () => {
     if (isNew) return;
-    const [{ data: planData }, { data: daysData }] = await Promise.all([
+    const [{ data: planData }, { data: daysData }, { data: tagRows }] = await Promise.all([
       supabase.from('reading_plans').select('*').eq('id', id).single(),
       supabase.from('reading_plan_days').select('*').eq('plan_id', id).order('day_number'),
+      supabase.from('plan_tags').select('tag_id').eq('plan_id', id),
     ]);
     if (planData) {
       setPlan(planData);
@@ -42,7 +45,21 @@ export default function AdminPlanEditorScreen() {
       setDurationDays(String(planData.duration_days));
     }
     setDays(daysData ?? []);
+    setPlanTagIds((tagRows ?? []).map((row) => row.tag_id));
   }, [id, isNew]);
+
+  const syncPlanTags = async (nextIds: string[]) => {
+    if (!plan) return;
+    const toAdd = nextIds.filter((tagId) => !planTagIds.includes(tagId));
+    const toRemove = planTagIds.filter((tagId) => !nextIds.includes(tagId));
+    setPlanTagIds(nextIds);
+    if (toAdd.length) {
+      await supabase.from('plan_tags').insert(toAdd.map((tag_id) => ({ plan_id: plan.id, tag_id })));
+    }
+    for (const tagId of toRemove) {
+      await supabase.from('plan_tags').delete().eq('plan_id', plan.id).eq('tag_id', tagId);
+    }
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -139,6 +156,8 @@ export default function AdminPlanEditorScreen() {
           <Text style={theme.typography.caption}>
             {days.length} of {plan?.duration_days} days added
           </Text>
+
+          <TagPicker selectedIds={planTagIds} onChange={syncPlanTags} />
 
           <View style={styles.addDayCard}>
             <Text style={theme.typography.caption}>ADD DAY {days.length + 1}</Text>

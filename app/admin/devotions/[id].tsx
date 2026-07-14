@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/Button';
 import { TextField } from '@/components/TextField';
+import { TagPicker } from '@/components/TagPicker';
 import type { Theme } from '@/constants/theme';
 
 function todayIso() {
@@ -25,6 +26,7 @@ export default function AdminDevotionEditorScreen() {
   const [scriptureText, setScriptureText] = useState('');
   const [body, setBody] = useState('');
   const [author, setAuthor] = useState('');
+  const [tagIds, setTagIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
   useFocusEffect(
@@ -44,6 +46,11 @@ export default function AdminDevotionEditorScreen() {
           setBody(data.body);
           setAuthor(data.author ?? '');
         });
+      supabase
+        .from('devotion_tags')
+        .select('tag_id')
+        .eq('devotion_id', id)
+        .then(({ data }) => setTagIds((data ?? []).map((row) => row.tag_id)));
     }, [id, isNew])
   );
 
@@ -62,9 +69,18 @@ export default function AdminDevotionEditorScreen() {
       author: author.trim() || null,
       updated_at: new Date().toISOString(),
     };
-    const { error } = isNew
-      ? await supabase.from('devotions').insert({ ...payload, created_by: profile?.id })
-      : await supabase.from('devotions').update(payload).eq('id', id);
+    const { data: saved, error } = isNew
+      ? await supabase.from('devotions').insert({ ...payload, created_by: profile?.id }).select().single()
+      : await supabase.from('devotions').update(payload).eq('id', id).select().single();
+
+    if (!error && saved) {
+      const devotionId = saved.id;
+      await supabase.from('devotion_tags').delete().eq('devotion_id', devotionId);
+      if (tagIds.length) {
+        await supabase.from('devotion_tags').insert(tagIds.map((tag_id) => ({ devotion_id: devotionId, tag_id })));
+      }
+    }
+
     setLoading(false);
     if (error) Alert.alert('Could not save', error.message);
     else router.back();
@@ -112,6 +128,7 @@ export default function AdminDevotionEditorScreen() {
         style={styles.multilineTall}
       />
       <TextField label="Author (optional)" value={author} onChangeText={setAuthor} placeholder="Pastor John" />
+      <TagPicker selectedIds={tagIds} onChange={setTagIds} />
 
       <Button label={isNew ? 'Publish devotion' : 'Save changes'} onPress={save} loading={loading} />
       {!isNew ? <Button label="Delete devotion" variant="secondary" onPress={remove} /> : null}
