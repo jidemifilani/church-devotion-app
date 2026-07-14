@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import { SUPPORTED_LOCALES } from '@/lib/i18n';
+import { STAFF_ROLES } from '@/constants/roles';
 import type { Theme } from '@/constants/theme';
 import type { ThemePreference } from '@/types/database';
 
@@ -144,7 +145,7 @@ export default function ProfileScreen() {
           <Ionicons name="chevron-forward" size={18} color={theme.colors.textMuted} style={styles.chevron} />
         </Pressable>
 
-        {profile?.role === 'admin' ? (
+        {profile && STAFF_ROLES.includes(profile.role) ? (
           <Pressable style={styles.linkRow} onPress={() => router.push('/admin')}>
             <Ionicons name="construct-outline" size={20} color={theme.colors.primary} />
             <Text style={theme.typography.body}>Admin dashboard</Text>
