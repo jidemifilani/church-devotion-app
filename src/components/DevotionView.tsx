@@ -6,7 +6,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import type { Theme } from '@/constants/theme';
-import type { Devotion } from '@/types/database';
+import type { Devotion, DevotionScriptureVersion } from '@/types/database';
 
 type Props = {
   devotion: Devotion;
@@ -24,8 +24,13 @@ export function DevotionView({ devotion, isBookmarked, onToggleBookmark }: Props
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const [highlighted, setHighlighted] = useState<Set<number>>(new Set());
   const [speaking, setSpeaking] = useState(false);
+  const [versions, setVersions] = useState<DevotionScriptureVersion[]>([]);
+  const [translationCode, setTranslationCode] = useState<string | null>(null);
 
   const segments = useMemo(() => splitSegments(devotion.body), [devotion.body]);
+
+  const scriptureText =
+    translationCode === null ? devotion.scripture_text : versions.find((v) => v.translation_code === translationCode)?.scripture_text;
 
   useEffect(() => {
     setHighlighted(new Set());
@@ -39,6 +44,15 @@ export function DevotionView({ devotion, isBookmarked, onToggleBookmark }: Props
         setHighlighted(new Set((data ?? []).map((row) => row.segment_index)));
       });
   }, [devotion.id, session]);
+
+  useEffect(() => {
+    setTranslationCode(null);
+    supabase
+      .from('devotion_scripture_versions')
+      .select('*')
+      .eq('devotion_id', devotion.id)
+      .then(({ data }) => setVersions(data ?? []));
+  }, [devotion.id]);
 
   useEffect(() => {
     return () => {
@@ -75,7 +89,7 @@ export function DevotionView({ devotion, isBookmarked, onToggleBookmark }: Props
       setSpeaking(false);
       return;
     }
-    const parts = [devotion.title, devotion.scripture_reference, devotion.scripture_text, devotion.body].filter(
+    const parts = [devotion.title, devotion.scripture_reference, scriptureText, devotion.body].filter(
       (part): part is string => !!part
     );
     setSpeaking(true);
@@ -114,8 +128,25 @@ export function DevotionView({ devotion, isBookmarked, onToggleBookmark }: Props
 
       <View style={styles.scriptureCard}>
         <Text style={styles.scriptureRef}>{devotion.scripture_reference}</Text>
-        {devotion.scripture_text ? (
-          <Text style={styles.scriptureText}>"{devotion.scripture_text}"</Text>
+        {scriptureText ? <Text style={styles.scriptureText}>"{scriptureText}"</Text> : null}
+        {versions.length ? (
+          <View style={styles.translationRow}>
+            <Pressable
+              onPress={() => setTranslationCode(null)}
+              style={[styles.translationChip, translationCode === null && styles.translationChipActive]}>
+              <Text style={[styles.translationText, translationCode === null && styles.translationTextActive]}>Default</Text>
+            </Pressable>
+            {versions.map((v) => (
+              <Pressable
+                key={v.translation_code}
+                onPress={() => setTranslationCode(v.translation_code)}
+                style={[styles.translationChip, translationCode === v.translation_code && styles.translationChipActive]}>
+                <Text style={[styles.translationText, translationCode === v.translation_code && styles.translationTextActive]}>
+                  {v.translation_code.toUpperCase()}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
         ) : null}
       </View>
 
@@ -149,6 +180,16 @@ const makeStyles = (theme: Theme) =>
     },
     scriptureRef: { fontSize: 15 * theme.fontScale, fontWeight: '700', color: theme.colors.primary },
     scriptureText: { fontSize: 16 * theme.fontScale, fontStyle: 'italic', color: theme.colors.text },
+    translationRow: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.xs, marginTop: theme.spacing.xs },
+    translationChip: {
+      paddingVertical: 2,
+      paddingHorizontal: theme.spacing.sm,
+      borderRadius: theme.radius.pill,
+      backgroundColor: theme.colors.surface,
+    },
+    translationChipActive: { backgroundColor: theme.colors.primary },
+    translationText: { color: theme.colors.primary, fontWeight: '600', fontSize: 12 },
+    translationTextActive: { color: '#fff' },
     author: { fontSize: 15 * theme.fontScale, color: theme.colors.textMuted, textAlign: 'right' },
     highlighted: { backgroundColor: theme.scheme === 'dark' ? '#5C4813' : '#FFE58A' },
   });

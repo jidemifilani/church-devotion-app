@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
-import { useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
@@ -8,6 +8,30 @@ import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
 import type { Theme } from '@/constants/theme';
 import type { ReadingPlan, ReadingPlanDay, UserPlanProgress } from '@/types/database';
+
+async function loadRecommendations(planId: string, userId: string): Promise<ReadingPlan[]> {
+  const { data: startedRows } = await supabase.from('user_plan_progress').select('plan_id').eq('user_id', userId);
+  const startedIds = new Set((startedRows ?? []).map((r) => r.plan_id).concat(planId));
+
+  const { data: tagRows } = await supabase.from('plan_tags').select('tag_id').eq('plan_id', planId);
+  const tagIds = (tagRows ?? []).map((r) => r.tag_id);
+
+  if (tagIds.length) {
+    const { data: relatedRows } = await supabase.from('plan_tags').select('plan_id').in('tag_id', tagIds).neq('plan_id', planId);
+    const relatedIds = [...new Set((relatedRows ?? []).map((r) => r.plan_id))].filter((pid) => !startedIds.has(pid));
+    if (relatedIds.length) {
+      const { data: plans } = await supabase.from('reading_plans').select('*').in('id', relatedIds).limit(3);
+      if (plans?.length) return plans;
+    }
+  }
+
+  const { data: fallback } = await supabase
+    .from('reading_plans')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(startedIds.size + 3);
+  return (fallback ?? []).filter((p) => !startedIds.has(p.id)).slice(0, 3);
+}
 
 export default function PlanDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -17,6 +41,7 @@ export default function PlanDetailScreen() {
   const [plan, setPlan] = useState<ReadingPlan | null>(null);
   const [days, setDays] = useState<ReadingPlanDay[]>([]);
   const [progress, setProgress] = useState<UserPlanProgress | null>(null);
+  const [recommendations, setRecommendations] = useState<ReadingPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
 
@@ -31,6 +56,9 @@ export default function PlanDetailScreen() {
     setPlan(planData ?? null);
     setDays(daysData ?? []);
     setProgress(progressData ?? null);
+    if (progressData?.completed_at && session) {
+      setRecommendations(await loadRecommendations(id, session.user.id));
+    }
   }, [id, session]);
 
   useFocusEffect(
@@ -85,7 +113,22 @@ export default function PlanDetailScreen() {
           {!progress ? (
             <Button label="Start Plan" onPress={startPlan} loading={busy} />
           ) : progress.completed_at ? (
-            <Text style={styles.doneBadge}>🎉 You completed this plan</Text>
+            <>
+              <Text style={styles.doneBadge}>🎉 You completed this plan</Text>
+              {recommendations.length ? (
+                <View style={styles.recommendations}>
+                  <Text style={theme.typography.caption}>YOU MIGHT ALSO LIKE</Text>
+                  {recommendations.map((rec) => (
+                    <Card key={rec.id} onPress={() => router.push(`/plans/${rec.id}`)}>
+                      <Text style={theme.typography.heading}>{rec.title}</Text>
+                      <Text style={theme.typography.caption}>
+                        {rec.duration_days} day{rec.duration_days === 1 ? '' : 's'}
+                      </Text>
+                    </Card>
+                  ))}
+                </View>
+              ) : null}
+            </>
           ) : null}
         </View>
       }
@@ -119,4 +162,5 @@ const makeStyles = (theme: Theme) =>
     scripture: { fontWeight: '600', color: theme.colors.primary },
     completeLabel: { color: theme.colors.success, fontWeight: '600' },
     doneBadge: { fontSize: 16, fontWeight: '600', color: theme.colors.success },
+    recommendations: { gap: theme.spacing.sm },
   });

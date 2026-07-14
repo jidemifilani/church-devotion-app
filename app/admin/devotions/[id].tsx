@@ -7,6 +7,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/Button';
 import { TextField } from '@/components/TextField';
 import { TagPicker } from '@/components/TagPicker';
+import { ScriptureVersionsEditor } from '@/components/ScriptureVersionsEditor';
 import type { Theme } from '@/constants/theme';
 
 function todayIso() {
@@ -129,6 +130,7 @@ export default function AdminDevotionEditorScreen() {
       />
       <TextField label="Author (optional)" value={author} onChangeText={setAuthor} placeholder="Pastor John" />
       <TagPicker selectedIds={tagIds} onChange={setTagIds} />
+      {!isNew ? <ScriptureVersionsEditor devotionId={id} /> : null}
 
       <Button label={isNew ? 'Publish devotion' : 'Save changes'} onPress={save} loading={loading} />
       {!isNew ? <Button label="Delete devotion" variant="secondary" onPress={remove} /> : null}
