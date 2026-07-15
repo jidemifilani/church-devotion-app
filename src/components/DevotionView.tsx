@@ -5,6 +5,7 @@ import * as Speech from 'expo-speech';
 import { useTheme } from '@/hooks/useTheme';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
+import { ShareVerseButton } from '@/components/ShareVerseButton';
 import type { Theme } from '@/constants/theme';
 import type { Devotion, DevotionScriptureVersion } from '@/types/database';
 
@@ -116,6 +117,7 @@ export function DevotionView({ devotion, isBookmarked, onToggleBookmark }: Props
           <Pressable onPress={toggleSpeech} hitSlop={12}>
             <Ionicons name={speaking ? 'stop-circle' : 'volume-high-outline'} size={24} color={theme.colors.primary} />
           </Pressable>
+          <ShareVerseButton title={devotion.title} scriptureReference={devotion.scripture_reference} scriptureText={scriptureText} />
           <Pressable onPress={onToggleBookmark} hitSlop={12}>
             <Ionicons
               name={isBookmarked ? 'bookmark' : 'bookmark-outline'}

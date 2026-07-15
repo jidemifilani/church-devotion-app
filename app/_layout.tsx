@@ -37,12 +37,17 @@ function RootNavigator() {
       <StatusBar style={theme.scheme === 'dark' ? 'light' : 'dark'} />
       <Stack screenOptions={{ headerStyle: { backgroundColor: theme.colors.surface }, headerTintColor: theme.colors.text }}>
         <Stack.Protected guard={!!session}>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="devotion/[id]" options={{ title: 'Devotion' }} />
-          <Stack.Screen name="bookmarks" options={{ title: 'Saved Devotions' }} />
-          <Stack.Screen name="archive" options={{ title: 'Past Devotions' }} />
-          <Stack.Protected guard={!!profile && STAFF_ROLES.includes(profile.role)}>
-            <Stack.Screen name="admin" options={{ headerShown: false }} />
+          <Stack.Protected guard={!!profile && !profile.has_onboarded}>
+            <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+          </Stack.Protected>
+          <Stack.Protected guard={!!profile && profile.has_onboarded}>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="devotion/[id]" options={{ title: 'Devotion' }} />
+            <Stack.Screen name="bookmarks" options={{ title: 'Saved Devotions' }} />
+            <Stack.Screen name="archive" options={{ title: 'Past Devotions' }} />
+            <Stack.Protected guard={!!profile && STAFF_ROLES.includes(profile.role)}>
+              <Stack.Screen name="admin" options={{ headerShown: false }} />
+            </Stack.Protected>
           </Stack.Protected>
         </Stack.Protected>
 
