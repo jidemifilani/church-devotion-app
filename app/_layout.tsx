@@ -45,6 +45,7 @@ function RootNavigator() {
             <Stack.Screen name="devotion/[id]" options={{ title: 'Devotion' }} />
             <Stack.Screen name="bookmarks" options={{ title: 'Saved Devotions' }} />
             <Stack.Screen name="archive" options={{ title: 'Past Devotions' }} />
+            <Stack.Screen name="topics" options={{ title: 'Browse by Topic' }} />
             <Stack.Protected guard={!!profile && STAFF_ROLES.includes(profile.role)}>
               <Stack.Screen name="admin" options={{ headerShown: false }} />
             </Stack.Protected>

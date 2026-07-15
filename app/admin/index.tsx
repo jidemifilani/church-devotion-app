@@ -16,6 +16,7 @@ const SECTIONS = [
   { href: '/admin/sermons', icon: 'mic-outline', title: 'Sermons', subtitle: 'Manage the sermon archive' },
   { href: '/admin/ministries', icon: 'people-circle-outline', title: 'Ministries', subtitle: 'Manage ministries and small groups' },
   { href: '/admin/church-settings', icon: 'business-outline', title: 'Church Settings', subtitle: 'Church info, giving, and staff' },
+  { href: '/admin/tags', icon: 'pricetag-outline', title: 'Tags', subtitle: 'Manage topics for devotions and plans' },
 ] as const;
 
 export default function AdminDashboard() {

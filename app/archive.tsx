@@ -74,6 +74,9 @@ export default function ArchiveScreen() {
           value={query}
           onChangeText={runSearch}
         />
+        <Text style={styles.topicsLink} onPress={() => router.push('/topics')}>
+          Browse by topic
+        </Text>
       </View>
       <FlatList
         data={devotions}
@@ -114,4 +117,5 @@ const makeStyles = (theme: Theme) =>
       color: theme.colors.text,
     },
     container: { padding: theme.spacing.lg, gap: theme.spacing.sm, flexGrow: 1 },
+    topicsLink: { color: theme.colors.primary, fontWeight: '600', marginTop: theme.spacing.sm },
   });
