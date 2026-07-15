@@ -1,14 +1,14 @@
 import { Platform } from 'react-native';
-import Constants, { ExecutionEnvironment } from 'expo-constants';
+import Constants from 'expo-constants';
 import Device from 'expo-device';
 import { supabase } from '@/lib/supabase';
+import { isExpoGo } from '@/lib/environment';
 
 const REMINDER_NOTIFICATION_ID = 'daily-devotion-reminder';
 
 // expo-notifications' remote-push functionality was removed from Expo Go in SDK 53,
 // and merely importing the module throws there — so it must be loaded lazily and
 // skipped entirely when running inside Expo Go rather than a dev/production build.
-const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
 
 let handlerSet = false;
 async function getNotifications() {
