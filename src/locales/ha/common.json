@@ -1,0 +1,43 @@
+{
+  "nav": {
+    "today": "Yau",
+    "plans": "Tsare-tsare",
+    "prayer": "Addu'a",
+    "hymns": "Wakoki",
+    "profile": "Bayanan Sirri",
+    "church": "Coci"
+  },
+  "actions": {
+    "save": "Ajiye",
+    "cancel": "Soke",
+    "delete": "Share",
+    "signIn": "Shiga",
+    "signUp": "Yi Rijista",
+    "signOut": "Fita",
+    "loading": "Ana lodi…",
+    "retry": "Sake Gwadawa",
+    "share": "Raba",
+    "report": "Kai Rahoto"
+  },
+  "auth": {
+    "welcomeBackTitle": "Barka da Dawowa",
+    "welcomeBackSubtitle": "Shiga don ci gaba da ibadar ka ta yau da kullum.",
+    "createAccountTitle": "Ƙirƙiri Asusun Ka",
+    "createAccountSubtitle": "Shiga cikin al'ummar coci.",
+    "email": "Imel",
+    "password": "Kalmar Sirri",
+    "fullName": "Cikakken Suna",
+    "noAccount": "Ba ka da asusu?",
+    "haveAccount": "Kana da asusu tuni?",
+    "createOne": "Ƙirƙiri Ɗaya",
+    "signIn": "Shiga"
+  },
+  "language": {
+    "title": "Harshe",
+    "en": "English",
+    "fr": "Français",
+    "yo": "Yorùbá",
+    "ig": "Igbo",
+    "ha": "Hausa"
+  }
+}

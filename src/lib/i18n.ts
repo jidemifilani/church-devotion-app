@@ -6,17 +6,24 @@ import type { Locale } from '@/types/database';
 
 import enCommon from '@/locales/en/common.json';
 import frCommon from '@/locales/fr/common.json';
+import yoCommon from '@/locales/yo/common.json';
+import igCommon from '@/locales/ig/common.json';
+import haCommon from '@/locales/ha/common.json';
 
 export const SUPPORTED_LOCALES: Locale[] = ['en', 'fr', 'yo', 'ig', 'ha'];
 export const LOCALE_STORAGE_KEY = 'app-locale';
 
-// yo/ig/ha resource bundles aren't shipped yet (see roadmap: pipeline ships
-// with en + fr to validate end-to-end; remaining languages are content-only
-// follow-up) — i18next's fallbackLng means those locales render English text
-// until real translations land, rather than us guessing at unverified copy.
+// yo/ig/ha are best-effort machine/non-native translations of the UI chrome
+// only (not reviewed by a native speaker — see README) — i18next's
+// fallbackLng still covers any individual missing key with English.
+// Devotion/scripture content stays admin-authored per language, never
+// auto-translated.
 const resources = {
   en: { common: enCommon },
   fr: { common: frCommon },
+  yo: { common: yoCommon },
+  ig: { common: igCommon },
+  ha: { common: haCommon },
 };
 
 function resolveInitialLocale(): Locale {

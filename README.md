@@ -90,8 +90,20 @@ supabase/
   seed.sql         sample content
 ```
 
+## Localization
+
+The app ships in English, French, Yoruba, Igbo, and Hausa. **English and French
+UI text have been reviewed; Yoruba, Igbo, and Hausa are best-effort
+translations of the interface chrome that have not been reviewed by a native
+speaker** — treat them as a starting point and have someone fluent check
+`src/locales/{yo,ig,ha}/common.json` before relying on them in production.
+Devotion and scripture content is always admin-authored per language (see
+`devotions.language` and `devotion_scripture_versions`), never
+machine-translated.
+
 ## Known trade-offs (MVP scope)
 
-- Date/time pickers use plain text input and preset chips instead of native pickers, to avoid an extra dependency — fine for admins entering a handful of devotions but worth upgrading to `@react-native-community/datetimepicker` later.
 - The admin CMS lives inside the same mobile app rather than a separate web dashboard, so church staff can manage content from a phone or tablet without any extra tooling.
-- No automated tests yet.
+- Analytics, bulk devotion scheduling, and offline caching are intentionally minimal (a handful of stat cards, sequential draft creation, and cache-first reads for Today/Hymns only) rather than general-purpose systems — see the codebase for what's actually implemented.
+- Sermon audio requires uploading files to Supabase Storage and pasting the public URL into the admin sermon editor; there's no in-app upload flow.
+- Home-screen widget support is Android-only; iOS WidgetKit support would need to be authored on a Mac and isn't included.

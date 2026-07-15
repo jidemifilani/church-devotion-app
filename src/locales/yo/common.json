@@ -1,0 +1,43 @@
+{
+  "nav": {
+    "today": "Lónìí",
+    "plans": "Àwọn Ètò",
+    "prayer": "Àdúrà",
+    "hymns": "Àwọn Orin",
+    "profile": "Àkọọ́lẹ̀",
+    "church": "Ìjọ"
+  },
+  "actions": {
+    "save": "Fi pamọ́",
+    "cancel": "Fagilé",
+    "delete": "Paarẹ́",
+    "signIn": "Wọlé",
+    "signUp": "Forúkọsílẹ̀",
+    "signOut": "Jáde",
+    "loading": "Ẹ jọ̀wọ́ dúró…",
+    "retry": "Gbìyànjú Lẹ́ẹ̀kansi",
+    "share": "Pín",
+    "report": "Jábọ̀"
+  },
+  "auth": {
+    "welcomeBackTitle": "Káàbọ̀ padà",
+    "welcomeBackSubtitle": "Wọlé láti tẹ̀síwájú ìsìn ọjọ́ rẹ.",
+    "createAccountTitle": "Ṣẹ̀dá àkọọ́lẹ̀ rẹ",
+    "createAccountSubtitle": "Darapọ̀ mọ́ ìjọ.",
+    "email": "Ímeèlì",
+    "password": "Ọ̀rọ̀ìgbaniwọlé",
+    "fullName": "Orúkọ kíkún",
+    "noAccount": "O ò ní àkọọ́lẹ̀?",
+    "haveAccount": "O ti ní àkọọ́lẹ̀ tẹ́lẹ̀?",
+    "createOne": "Ṣẹ̀dá ọ̀kan",
+    "signIn": "Wọlé"
+  },
+  "language": {
+    "title": "Èdè",
+    "en": "English",
+    "fr": "Français",
+    "yo": "Yorùbá",
+    "ig": "Igbo",
+    "ha": "Hausa"
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "nav": {
+    "today": "Taa",
+    "plans": "Atụmatụ",
+    "prayer": "Ekpere",
+    "hymns": "Abụ",
+    "profile": "Profaịlụ",
+    "church": "Chọọchị"
+  },
+  "actions": {
+    "save": "Chekwaa",
+    "cancel": "Kagbuo",
+    "delete": "Hichapụ",
+    "signIn": "Banye",
+    "signUp": "Debanye Aha",
+    "signOut": "Pụọ",
+    "loading": "Na-ebu…",
+    "retry": "Nwaa Ọzọ",
+    "share": "Kesaa",
+    "report": "Kpesa"
+  },
+  "auth": {
+    "welcomeBackTitle": "Nnọọ Ọzọ",
+    "welcomeBackSubtitle": "Banye ka ị gaa n'ihu na ekpere gị kwa ụbọchị.",
+    "createAccountTitle": "Mepụta Akaụntụ Gị",
+    "createAccountSubtitle": "Sonye na ndị chọọchị.",
+    "email": "Ozi-e",
+    "password": "Okwuntughe",
+    "fullName": "Aha Zuru Ezu",
+    "noAccount": "Ị nweghị akaụntụ?",
+    "haveAccount": "Ị nweelarị akaụntụ?",
+    "createOne": "Mepụta Otu",
+    "signIn": "Banye"
+  },
+  "language": {
+    "title": "Asụsụ",
+    "en": "English",
+    "fr": "Français",
+    "yo": "Yorùbá",
+    "ig": "Igbo",
+    "ha": "Hausa"
+  }
+}
