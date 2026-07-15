@@ -15,6 +15,13 @@ export default function AdminLayout() {
       <Stack.Screen name="prayer/index" options={{ title: 'Prayer Requests' }} />
       <Stack.Screen name="analytics/index" options={{ title: 'Analytics' }} />
       <Stack.Screen name="members/index" options={{ title: 'Members' }} />
+      <Stack.Screen name="announcements/index" options={{ title: 'Announcements' }} />
+      <Stack.Screen name="announcements/[id]" options={{ title: 'Announcement' }} />
+      <Stack.Screen name="sermons/index" options={{ title: 'Sermons' }} />
+      <Stack.Screen name="sermons/[id]" options={{ title: 'Sermon' }} />
+      <Stack.Screen name="ministries/index" options={{ title: 'Ministries' }} />
+      <Stack.Screen name="ministries/[id]" options={{ title: 'Ministry' }} />
+      <Stack.Screen name="church-settings/index" options={{ title: 'Church Settings' }} />
     </Stack>
   );
 }

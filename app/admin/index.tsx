@@ -12,6 +12,10 @@ const SECTIONS = [
   { href: '/admin/prayer', icon: 'heart-outline', title: 'Prayer Requests', subtitle: 'Moderate and mark as answered' },
   { href: '/admin/analytics', icon: 'bar-chart-outline', title: 'Analytics', subtitle: 'Engagement at a glance' },
   { href: '/admin/members', icon: 'people-outline', title: 'Members', subtitle: 'Manage roles' },
+  { href: '/admin/announcements', icon: 'megaphone-outline', title: 'Announcements', subtitle: 'Post news and events' },
+  { href: '/admin/sermons', icon: 'mic-outline', title: 'Sermons', subtitle: 'Manage the sermon archive' },
+  { href: '/admin/ministries', icon: 'people-circle-outline', title: 'Ministries', subtitle: 'Manage ministries and small groups' },
+  { href: '/admin/church-settings', icon: 'business-outline', title: 'Church Settings', subtitle: 'Church info, giving, and staff' },
 ] as const;
 
 export default function AdminDashboard() {
