@@ -3,34 +3,34 @@ import { ActivityIndicator, FlatList, StyleSheet, Text, TextInput, View } from '
 import { router, useFocusEffect } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useTheme } from '@/hooks/useTheme';
+import { useCachedQuery } from '@/hooks/useCachedQuery';
 import { Card } from '@/components/Card';
 import type { Theme } from '@/constants/theme';
 import type { Hymn } from '@/types/database';
 
+async function fetchHymns(): Promise<Hymn[]> {
+  const { data } = await supabase.from('hymns').select('*').order('number', { ascending: true, nullsFirst: false });
+  return data ?? [];
+}
+
 export default function HymnsScreen() {
   const { theme } = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
-  const [hymns, setHymns] = useState<Hymn[]>([]);
+  const { data: hymns, loading, refetch } = useCachedQuery('hymns', fetchHymns);
   const [query, setQuery] = useState('');
-  const [loading, setLoading] = useState(true);
 
   useFocusEffect(
     useCallback(() => {
-      supabase
-        .from('hymns')
-        .select('*')
-        .order('number', { ascending: true, nullsFirst: false })
-        .then(({ data }) => {
-          setHymns(data ?? []);
-          setLoading(false);
-        });
+      refetch();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
   );
 
   const filtered = (() => {
+    const all = hymns ?? [];
     const q = query.trim().toLowerCase();
-    if (!q) return hymns;
-    return hymns.filter(
+    if (!q) return all;
+    return all.filter(
       (h) =>
         h.title.toLowerCase().includes(q) ||
         h.lyrics.toLowerCase().includes(q) ||

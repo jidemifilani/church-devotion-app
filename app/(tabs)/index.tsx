@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
+import { useCachedQuery } from '@/hooks/useCachedQuery';
 import { DevotionView } from '@/components/DevotionView';
 import { updateTodayVerseWidget } from '@/widgets/updateWidget';
 import type { Theme } from '@/constants/theme';
@@ -14,55 +15,52 @@ function todayIso() {
   return new Date().toISOString().slice(0, 10);
 }
 
+async function fetchTodayDevotion(): Promise<Devotion | null> {
+  const { data } = await supabase
+    .from('devotions')
+    .select('*')
+    .eq('status', 'published')
+    .lte('devotion_date', todayIso())
+    .order('devotion_date', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return data ?? null;
+}
+
 export default function TodayScreen() {
   const { session, profile } = useAuth();
   const { theme } = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
-  const [devotion, setDevotion] = useState<Devotion | null>(null);
+  const { data: devotion, loading, refetch } = useCachedQuery('today-devotion', fetchTodayDevotion);
   const [isBookmarked, setIsBookmarked] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const load = useCallback(async () => {
-    const { data: devotionData } = await supabase
-      .from('devotions')
-      .select('*')
-      .eq('status', 'published')
-      .lte('devotion_date', todayIso())
-      .order('devotion_date', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    setDevotion(devotionData ?? null);
-
-    if (devotionData) {
-      updateTodayVerseWidget({
-        title: devotionData.title,
-        scriptureReference: devotionData.scripture_reference,
-        scriptureText: devotionData.scripture_text,
-      });
-    }
-
-    if (devotionData && session) {
-      const { data: bookmark } = await supabase
-        .from('bookmarks')
-        .select('id')
-        .eq('user_id', session.user.id)
-        .eq('devotion_id', devotionData.id)
-        .maybeSingle();
-      setIsBookmarked(!!bookmark);
-      supabase.rpc('record_devotion_read', { p_devotion_id: devotionData.id });
-    }
-  }, [session]);
+  useEffect(() => {
+    refetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
-    setLoading(true);
-    load().finally(() => setLoading(false));
-  }, [load]);
+    if (!devotion) return;
+    updateTodayVerseWidget({
+      title: devotion.title,
+      scriptureReference: devotion.scripture_reference,
+      scriptureText: devotion.scripture_text,
+    });
+    if (!session) return;
+    supabase
+      .from('bookmarks')
+      .select('id')
+      .eq('user_id', session.user.id)
+      .eq('devotion_id', devotion.id)
+      .maybeSingle()
+      .then(({ data }) => setIsBookmarked(!!data));
+    supabase.rpc('record_devotion_read', { p_devotion_id: devotion.id });
+  }, [devotion, session]);
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await load();
+    await refetch();
     setRefreshing(false);
   };
 
