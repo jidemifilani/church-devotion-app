@@ -32,6 +32,7 @@ export default function AdminDevotionEditorScreen() {
   const [body, setBody] = useState('');
   const [author, setAuthor] = useState('');
   const [status, setStatus] = useState<'draft' | 'published'>('draft');
+  const [initialStatus, setInitialStatus] = useState<'draft' | 'published'>('draft');
   const [tagIds, setTagIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [previewing, setPreviewing] = useState(false);
@@ -53,6 +54,7 @@ export default function AdminDevotionEditorScreen() {
           setBody(data.body);
           setAuthor(data.author ?? '');
           setStatus(data.status);
+          setInitialStatus(data.status);
         });
       supabase
         .from('devotion_tags')
@@ -88,6 +90,9 @@ export default function AdminDevotionEditorScreen() {
       await supabase.from('devotion_tags').delete().eq('devotion_id', devotionId);
       if (tagIds.length) {
         await supabase.from('devotion_tags').insert(tagIds.map((tag_id) => ({ devotion_id: devotionId, tag_id })));
+      }
+      if (nextStatus === 'published' && initialStatus !== 'published') {
+        supabase.functions.invoke('notify-devotion-published', { body: { devotion_id: devotionId } });
       }
     }
 

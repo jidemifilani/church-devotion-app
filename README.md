@@ -20,8 +20,14 @@ A daily devotion mobile app for a single church, built with Expo (React Native) 
 ## 1. Create your Supabase project
 
 1. Create a project at [supabase.com](https://supabase.com).
-2. In the SQL Editor, run the migration in order:
-   - `supabase/migrations/0001_init.sql` — creates all tables, RLS policies, and triggers
+2. In the SQL Editor, run every file in `supabase/migrations/` in order — skipping any of these will leave the schema out of sync with the app:
+   - `0001_init.sql` — creates all tables, RLS policies, and triggers
+   - `0002_engagement.sql` — streaks, drafts, translations, tags, highlights
+   - `0003_community.sql` — prayer replies, reports, rate limiting
+   - `0004_personalization.sql` — locale, theme, font scale, onboarding
+   - `0005_roles.sql` — granular admin roles (member/editor/moderator/admin)
+   - `0006_outreach.sql` — announcements, sermons, ministries, church info, giving
+   - `0007_fix_role_bootstrap.sql` — fixes the role-change trigger so the first-admin promotion below actually works
    - `supabase/seed.sql` (optional) — adds a couple of sample devotions and hymns so the app isn't empty on first run
 3. Go to Project Settings → API and copy the **Project URL** and **anon public key**.
 
@@ -69,7 +75,15 @@ To also enable Expo push tokens (needed if you later want the admin panel to pus
 2. Paste that ID into `app.json` → `expo.extra.eas.projectId`.
 3. Push tokens are then saved automatically per-device to the `push_tokens` table on sign-in.
 
-Sending a push to all tokens would be a small Supabase Edge Function that calls Expo's push API (`https://exp.host/--/api/v2/push/send`) with the tokens from that table — not included yet since it needs a live, authenticated Supabase project to deploy.
+Two Supabase Edge Functions call Expo's push API (`https://exp.host/--/api/v2/push/send`) with tokens from that table — deploy them against your project once it's live:
+
+```bash
+supabase functions deploy notify-prayer
+supabase functions deploy notify-devotion-published
+```
+
+- `notify-prayer` — pings a prayer request's owner when someone else prays for it.
+- `notify-devotion-published` — when an admin publishes today's devotion (from the editor's Publish button or bulk-publish), pushes it to every device. Admin-only (checked server-side); silently skips devotions dated other than today, so bulk-publishing future drafts in advance won't spam members.
 
 ## Project structure
 

@@ -5,11 +5,22 @@ import { createClient } from 'jsr:@supabase/supabase-js@2';
 
 const EXPO_PUSH_URL = 'https://exp.host/--/api/v2/push/send';
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
 Deno.serve(async (req: Request) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
+  }
   try {
     const { prayer_request_id } = await req.json();
     if (!prayer_request_id) {
-      return new Response(JSON.stringify({ error: 'prayer_request_id is required' }), { status: 400 });
+      return new Response(JSON.stringify({ error: 'prayer_request_id is required' }), {
+        status: 400,
+        headers: corsHeaders,
+      });
     }
 
     const authHeader = req.headers.get('Authorization') ?? '';
@@ -33,7 +44,9 @@ Deno.serve(async (req: Request) => {
       .single();
 
     if (!request || request.user_id === user?.id) {
-      return new Response(JSON.stringify({ skipped: true }), { headers: { 'Content-Type': 'application/json' } });
+      return new Response(JSON.stringify({ skipped: true }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const { data: tokens } = await adminClient.from('push_tokens').select('token').eq('user_id', request.user_id);
@@ -53,9 +66,9 @@ Deno.serve(async (req: Request) => {
     }
 
     return new Response(JSON.stringify({ ok: true, notified: tokens?.length ?? 0 }), {
-      headers: { 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (err) {
-    return new Response(JSON.stringify({ error: String(err) }), { status: 500 });
+    return new Response(JSON.stringify({ error: String(err) }), { status: 500, headers: corsHeaders });
   }
 });

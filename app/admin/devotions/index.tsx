@@ -54,10 +54,15 @@ export default function AdminDevotionsScreen() {
   };
 
   const bulkPublish = async () => {
+    const ids = [...selectedIds];
     await supabase
       .from('devotions')
       .update({ status: 'published', published_at: new Date().toISOString() })
-      .in('id', [...selectedIds]);
+      .in('id', ids);
+    const today = todayIso();
+    devotions
+      .filter((d) => ids.includes(d.id) && d.status !== 'published' && d.devotion_date === today)
+      .forEach((d) => supabase.functions.invoke('notify-devotion-published', { body: { devotion_id: d.id } }));
     exitSelecting();
     load();
   };
