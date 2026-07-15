@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
 import { DevotionView } from '@/components/DevotionView';
+import { updateTodayVerseWidget } from '@/widgets/updateWidget';
 import type { Theme } from '@/constants/theme';
 import type { Devotion } from '@/types/database';
 
@@ -33,6 +34,14 @@ export default function TodayScreen() {
       .maybeSingle();
 
     setDevotion(devotionData ?? null);
+
+    if (devotionData) {
+      updateTodayVerseWidget({
+        title: devotionData.title,
+        scriptureReference: devotionData.scripture_reference,
+        scriptureText: devotionData.scripture_text,
+      });
+    }
 
     if (devotionData && session) {
       const { data: bookmark } = await supabase

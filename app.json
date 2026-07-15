@@ -30,11 +30,29 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/notification-icon.png",
+          "icon": "./assets/android-icon-monochrome.png",
           "color": "#4A3AFF"
         }
       ],
-      "expo-localization"
+      "expo-localization",
+      [
+        "react-native-android-widget",
+        {
+          "widgets": [
+            {
+              "name": "TodayVerse",
+              "label": "Today's Verse",
+              "minWidth": "250dp",
+              "minHeight": "120dp",
+              "targetCellWidth": 3,
+              "targetCellHeight": 2,
+              "description": "Shows today's devotion scripture on your home screen.",
+              "updatePeriodMillis": 1800000,
+              "resizeMode": "horizontal|vertical"
+            }
+          ]
+        }
+      ]
     ],
     "extra": {
       "eas": {
