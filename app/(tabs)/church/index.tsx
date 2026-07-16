@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useTheme } from '@/hooks/useTheme';
@@ -17,7 +17,7 @@ export default function ChurchHubScreen() {
   const { theme } = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       {SECTIONS.map((section) => (
         <Pressable key={section.href} style={styles.card} onPress={() => router.push(section.href)}>
           <View style={styles.iconWrap}>
@@ -30,13 +30,13 @@ export default function ChurchHubScreen() {
           <Ionicons name="chevron-forward" size={20} color={theme.colors.textMuted} />
         </Pressable>
       ))}
-    </View>
+    </ScrollView>
   );
 }
 
 const makeStyles = (theme: Theme) =>
   StyleSheet.create({
-    container: { padding: theme.spacing.lg, gap: theme.spacing.md, backgroundColor: theme.colors.background, flex: 1 },
+    container: { padding: theme.spacing.lg, gap: theme.spacing.md, backgroundColor: theme.colors.background, flexGrow: 1 },
     card: {
       flexDirection: 'row',
       alignItems: 'center',
