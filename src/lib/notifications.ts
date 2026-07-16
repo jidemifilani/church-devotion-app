@@ -29,6 +29,7 @@ async function getNotifications() {
 }
 
 export async function registerForPushNotificationsAsync(userId: string) {
+  if (Platform.OS === 'web') return null;
   const Notifications = await getNotifications();
   if (!Notifications || !Device.isDevice) return null;
 
@@ -63,6 +64,7 @@ export async function registerForPushNotificationsAsync(userId: string) {
 }
 
 export async function syncDailyReminder(enabled: boolean, time: string) {
+  if (Platform.OS === 'web') return;
   const Notifications = await getNotifications();
   if (!Notifications) return;
 
