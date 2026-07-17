@@ -145,7 +145,7 @@ export default function AdminDevotionsScreen() {
               ) : null}
               <View style={styles.cardText}>
                 <Text style={theme.typography.caption}>
-                  {item.devotion_date} {item.status === 'draft' ? '• DRAFT' : ''}
+                  {item.devotion_date} • {item.language.toUpperCase()} {item.status === 'draft' ? '• DRAFT' : ''}
                 </Text>
                 <Text style={theme.typography.heading}>{item.title}</Text>
                 <Text style={theme.typography.caption}>{item.scripture_reference}</Text>

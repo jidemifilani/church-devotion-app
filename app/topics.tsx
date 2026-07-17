@@ -2,14 +2,18 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
+import { localesToFetch, preferLocale } from '@/lib/devotions';
 import { Card } from '@/components/Card';
 import type { Theme } from '@/constants/theme';
 import type { Devotion, ReadingPlan, Tag } from '@/types/database';
 
 export default function TopicsScreen() {
+  const { profile } = useAuth();
   const { theme } = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
+  const locale = profile?.locale ?? 'en';
   const [tags, setTags] = useState<Tag[]>([]);
   const [selectedTag, setSelectedTag] = useState<Tag | null>(null);
   const [devotions, setDevotions] = useState<Devotion[]>([]);
@@ -45,15 +49,21 @@ export default function TopicsScreen() {
       const planIds = (planTagRows ?? []).map((r) => r.plan_id);
       const [{ data: devotionsData }, { data: plansData }] = await Promise.all([
         devotionIds.length
-          ? supabase.from('devotions').select('*').eq('status', 'published').in('id', devotionIds).order('devotion_date', { ascending: false })
+          ? supabase
+              .from('devotions')
+              .select('*')
+              .eq('status', 'published')
+              .in('id', devotionIds)
+              .in('language', localesToFetch(locale))
+              .order('devotion_date', { ascending: false })
           : Promise.resolve({ data: [] }),
         planIds.length ? supabase.from('reading_plans').select('*').in('id', planIds) : Promise.resolve({ data: [] }),
       ]);
-      setDevotions(devotionsData ?? []);
+      setDevotions(preferLocale(devotionsData ?? [], locale));
       setPlans(plansData ?? []);
       setLoadingResults(false);
     });
-  }, [selectedTag]);
+  }, [selectedTag, locale]);
 
   if (loading) {
     return (

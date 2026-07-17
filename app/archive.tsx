@@ -2,7 +2,9 @@ import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
+import { localesToFetch, preferLocale } from '@/lib/devotions';
 import { Card } from '@/components/Card';
 import type { Theme } from '@/constants/theme';
 import type { Devotion } from '@/types/database';
@@ -12,24 +14,27 @@ function todayIso() {
 }
 
 export default function ArchiveScreen() {
+  const { profile } = useAuth();
   const { theme } = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const [devotions, setDevotions] = useState<Devotion[]>([]);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [searching, setSearching] = useState(false);
+  const locale = profile?.locale ?? 'en';
 
   const loadRecent = useCallback(async () => {
     const { data } = await supabase
       .from('devotions')
       .select('*')
       .eq('status', 'published')
+      .in('language', localesToFetch(locale))
       .lte('devotion_date', todayIso())
       .order('devotion_date', { ascending: false })
       .limit(60);
-    setDevotions(data ?? []);
+    setDevotions(preferLocale(data ?? [], locale));
     setLoading(false);
-  }, []);
+  }, [locale]);
 
   useFocusEffect(
     useCallback(() => {
@@ -50,10 +55,11 @@ export default function ArchiveScreen() {
       .from('devotions')
       .select('*')
       .eq('status', 'published')
+      .in('language', localesToFetch(locale))
       .textSearch('search_vector', trimmed.split(/\s+/).join(' & '), { type: 'plain' })
       .order('devotion_date', { ascending: false })
       .limit(60);
-    setDevotions(data ?? []);
+    setDevotions(preferLocale(data ?? [], locale));
   };
 
   if (loading) {

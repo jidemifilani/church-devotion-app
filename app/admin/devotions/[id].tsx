@@ -2,9 +2,11 @@ import { useCallback, useMemo, useState } from 'react';
 import { Alert, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
+import { SUPPORTED_LOCALES } from '@/lib/i18n';
 import { Button } from '@/components/Button';
 import { TextField } from '@/components/TextField';
 import { TagPicker } from '@/components/TagPicker';
@@ -12,7 +14,7 @@ import { ScriptureVersionsEditor } from '@/components/ScriptureVersionsEditor';
 import { DatePickerField } from '@/components/DatePickerField';
 import { DevotionView } from '@/components/DevotionView';
 import type { Theme } from '@/constants/theme';
-import type { Devotion } from '@/types/database';
+import type { Devotion, Locale } from '@/types/database';
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
@@ -22,6 +24,7 @@ export default function AdminDevotionEditorScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { profile } = useAuth();
   const { theme } = useTheme();
+  const { t } = useTranslation();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const isNew = id === 'new';
 
@@ -31,6 +34,7 @@ export default function AdminDevotionEditorScreen() {
   const [scriptureText, setScriptureText] = useState('');
   const [body, setBody] = useState('');
   const [author, setAuthor] = useState('');
+  const [language, setLanguage] = useState<Locale>('en');
   const [status, setStatus] = useState<'draft' | 'published'>('draft');
   const [initialStatus, setInitialStatus] = useState<'draft' | 'published'>('draft');
   const [tagIds, setTagIds] = useState<string[]>([]);
@@ -53,6 +57,7 @@ export default function AdminDevotionEditorScreen() {
           setScriptureText(data.scripture_text ?? '');
           setBody(data.body);
           setAuthor(data.author ?? '');
+          setLanguage(data.language);
           setStatus(data.status);
           setInitialStatus(data.status);
         });
@@ -77,6 +82,7 @@ export default function AdminDevotionEditorScreen() {
       scripture_text: scriptureText.trim() || null,
       body: body.trim(),
       author: author.trim() || null,
+      language,
       status: nextStatus,
       published_at: nextStatus === 'published' ? new Date().toISOString() : null,
       updated_at: new Date().toISOString(),
@@ -127,7 +133,7 @@ export default function AdminDevotionEditorScreen() {
     audio_url: null,
     status,
     published_at: null,
-    language: 'en',
+    language,
     created_by: null,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
@@ -149,6 +155,17 @@ export default function AdminDevotionEditorScreen() {
             <Text style={[styles.statusText, status === s && styles.statusTextActive]}>
               {s === 'draft' ? 'Draft' : 'Published'}
             </Text>
+          </Pressable>
+        ))}
+      </View>
+
+      <View style={styles.statusRow}>
+        {SUPPORTED_LOCALES.map((code) => (
+          <Pressable
+            key={code}
+            onPress={() => setLanguage(code)}
+            style={[styles.statusChip, language === code && styles.statusChipActive]}>
+            <Text style={[styles.statusText, language === code && styles.statusTextActive]}>{t(`language.${code}`)}</Text>
           </Pressable>
         ))}
       </View>
@@ -206,7 +223,7 @@ const makeStyles = (theme: Theme) =>
     headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
     previewLink: { flexDirection: 'row', alignItems: 'center', gap: 4 },
     previewLinkText: { color: theme.colors.primary, fontWeight: '600' },
-    statusRow: { flexDirection: 'row', gap: theme.spacing.sm },
+    statusRow: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.sm },
     statusChip: {
       paddingVertical: theme.spacing.xs,
       paddingHorizontal: theme.spacing.md,

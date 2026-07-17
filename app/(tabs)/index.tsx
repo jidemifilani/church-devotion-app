@@ -9,36 +9,51 @@ import { useCachedQuery } from '@/hooks/useCachedQuery';
 import { DevotionView } from '@/components/DevotionView';
 import { updateTodayVerseWidget } from '@/widgets/updateWidget';
 import type { Theme } from '@/constants/theme';
-import type { Devotion } from '@/types/database';
+import type { Devotion, Locale } from '@/types/database';
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
 }
 
-async function fetchTodayDevotion(): Promise<Devotion | null> {
+// devotions are admin-authored per language; if today's devotion hasn't been
+// written in the member's locale yet, fall back to English rather than showing nothing.
+async function fetchTodayDevotion(locale: Locale): Promise<Devotion | null> {
   const { data } = await supabase
     .from('devotions')
     .select('*')
     .eq('status', 'published')
+    .eq('language', locale)
     .lte('devotion_date', todayIso())
     .order('devotion_date', { ascending: false })
     .limit(1)
     .maybeSingle();
-  return data ?? null;
+  if (data || locale === 'en') return data ?? null;
+
+  const { data: fallback } = await supabase
+    .from('devotions')
+    .select('*')
+    .eq('status', 'published')
+    .eq('language', 'en')
+    .lte('devotion_date', todayIso())
+    .order('devotion_date', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return fallback ?? null;
 }
 
 export default function TodayScreen() {
   const { session, profile } = useAuth();
   const { theme } = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
-  const { data: devotion, loading, refetch } = useCachedQuery('today-devotion', fetchTodayDevotion);
+  const locale = profile?.locale ?? 'en';
+  const { data: devotion, loading, refetch } = useCachedQuery(`today-devotion:${locale}`, () => fetchTodayDevotion(locale));
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     refetch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [locale]);
 
   useEffect(() => {
     if (!devotion) return;
